@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse our catalog of reference vehicles. Filter by make, body type, and other specifications.">
+  <title>Catalog - Reference Vehicle Marketplace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/blocksy-inspired.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar">
+      <div class="container">
+        <div class="navbar-brand">
+          <a href="index.html" class="logo">Reference Vehicles</a>
+        </div>
+        <ul class="navbar-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="catalog.html" class="active">Catalog</a></li>
+          <li><a href="how-it-works.html">How It Works</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="shipping-payment.html">Shipping & Payment</a></li>
+          <li><a href="documents-faq.html">Documents & FAQ</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-header">
+      <div class="container">
+        <h1>Reference Vehicle Catalog</h1>
+        <p>Browse past transaction examples. All vehicles are right-hand drive (RHD) only.</p>
+      </div>
+    </section>
+
+    <section class="catalog-section">
+      <div class="container">
+        <div class="catalog-layout">
+          <aside class="catalog-sidebar">
+            <div class="filter-group">
+              <h3>Filters</h3>
+              
+              <div class="filter-item">
+                <label for="filter-make">Make</label>
+                <select id="filter-make" class="filter-select">
+                  <option value="">All Makes</option>
+                  <option value="Toyota">Toyota</option>
+                  <option value="Nissan">Nissan</option>
+                  <option value="Honda">Honda</option>
+                  <option value="Mitsubishi">Mitsubishi</option>
+                  <option value="Hyundai">Hyundai</option>
+                </select>
+              </div>
+
+              <div class="filter-item">
+                <label for="filter-body-type">Body Type</label>
+                <select id="filter-body-type" class="filter-select">
+                  <option value="">All Types</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Sedan">Sedan</option>
+                  <option value="Van">Van</option>
+                  <option value="Truck">Truck</option>
+                  <option value="Hatchback">Hatchback</option>
+                </select>
+              </div>
+
+              <div class="filter-item">
+                <label for="filter-fuel-type">Fuel Type</label>
+                <select id="filter-fuel-type" class="filter-select">
+                  <option value="">All Fuels</option>
+                  <option value="Petrol">Petrol</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+
+              <div class="filter-item">
+                <label for="filter-transmission">Transmission</label>
+                <select id="filter-transmission" class="filter-select">
+                  <option value="">All Types</option>
+                  <option value="Manual">Manual</option>
+                  <option value="Automatic">Automatic</option>
+                </select>
+              </div>
+
+              <div class="filter-item">
+                <label for="filter-year-from">Year From</label>
+                <input type="number" id="filter-year-from" class="filter-input" placeholder="2015" min="2000" max="2024">
+              </div>
+
+              <div class="filter-item">
+                <label for="filter-year-to">Year To</label>
+                <input type="number" id="filter-year-to" class="filter-input" placeholder="2024" min="2000" max="2024">
+              </div>
+
+              <div class="filter-item">
+                <label for="filter-mileage-max">Max Mileage (km)</label>
+                <input type="number" id="filter-mileage-max" class="filter-input" placeholder="100000">
+              </div>
+
+              <button id="filter-apply" class="btn btn-primary btn-block">Apply Filters</button>
+              <button id="filter-reset" class="btn btn-secondary btn-block">Reset</button>
+            </div>
+          </aside>
+
+          <div class="catalog-main">
+            <div class="results-info">
+              <p>Showing <span id="results-count">0</span> vehicles</p>
+              <div class="sort-options">
+                <label for="sort-by">Sort by:</label>
+                <select id="sort-by" class="filter-select">
+                  <option value="date_desc">Newest First</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                  <option value="year_desc">Year: Newest First</option>
+                  <option value="mileage_asc">Mileage: Low to High</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="vehicle-grid" id="vehicle-grid">
+              <div class="loading">Loading vehicles...</div>
+            </div>
+
+            <div class="pagination" id="pagination"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="container">
+        <h2>Didn't Find What You're Looking For?</h2>
+        <p>Submit a custom request and we'll find similar vehicles matching your specifications.</p>
+        <a href="rfq.html" class="btn btn-primary">Request Quote</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="catalog.html">Catalog</a></li>
+            <li><a href="how-it-works.html">How It Works</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="documents-faq.html">Documents & FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="shipping-payment.html">Shipping & Payment</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Service Areas</h4>
+          <ul>
+            <li>Ghana (Tema)</li>
+            <li>Nigeria (Lagos)</li>
+            <li>Benin (Cotonou)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Reference Vehicle Marketplace. All rights reserved.</p>
+        <p class="disclaimer-footer">Right-hand drive (RHD) only. Reference vehicles are past transaction examples, not in stock.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/catalog-filter.js"></script>
+</body>
+</html>
