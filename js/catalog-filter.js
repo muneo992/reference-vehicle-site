@@ -1,3 +1,131 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const vehicleGrid = document.getElementById("vehicle-grid");
+  const resultsCount = document.getElementById("results-count");
+
+  const filterMake = document.getElementById("filter-make");
+  const filterBody = document.getElementById("filter-body");
+  const filterFuel = document.getElementById("filter-fuel");
+  const filterTransmission = document.getElementById("filter-transmission");
+  const filterYearFrom = document.getElementById("filter-year-from");
+  const filterYearTo = document.getElementById("filter-year-to");
+  const filterMileage = document.getElementById("filter-mileage");
+  const sortSelect = document.getElementById("sort-select");
+  const resetFiltersBtn = document.getElementById("reset-filters");
+
+  let vehicles = [];
+  let filteredVehicles = [];
+
+  fetch("data/vehicles.json")
+    .then(response => response.json())
+    .then(data => {
+      vehicles = data;
+      filteredVehicles = vehicles;
+      renderVehicles();
+    });
+
+  function renderVehicles() {
+    vehicleGrid.innerHTML = "";
+
+    filteredVehicles.forEach(v => {
+      const hasImage = v.gallery && v.gallery.length > 0;
+      const imageSrc = hasImage ? v.gallery[0] : "";
+
+      const card = document.createElement("div");
+      card.className = "vehicle-card";
+
+      card.innerHTML = `
+        <div class="vehicle-image ${hasImage ? "" : "no-image"}">
+          ${
+            hasImage
+              ? `<img src="${imageSrc}" alt="${v.display_name_en}">`
+              : `<span>No Image</span>`
+          }
+        </div>
+
+        <div class="vehicle-info">
+          <h3>${v.display_name_en}</h3>
+
+          <div class="vehicle-specs">
+            <p><strong>Ref:</strong> ${v.ref}</p>
+            <p><strong>Year:</strong> ${v.year}</p>
+            <p><strong>Mileage:</strong> ${v.mileage_km.toLocaleString()} km</p>
+            <p><strong>Fuel:</strong> ${v.fuel_type}</p>
+            <p><strong>Transmission:</strong> ${v.transmission}</p>
+          </div>
+
+          <div class="vehicle-price">
+            <span class="price-range">$${v.price_low_usd.toLocaleString()} - $${v.price_high_usd.toLocaleString()}</span>
+            <span class="price-period">(${v.basis})</span>
+          </div>
+
+          <a href="vehicle-detail.html?ref=${v.ref}" class="btn btn-primary btn-block">
+            Request Quote for Similar
+          </a>
+        </div>
+      `;
+
+      vehicleGrid.appendChild(card);
+    });
+
+    resultsCount.textContent = `${filteredVehicles.length} vehicles found`;
+  }
+
+  function applyFilters() {
+    filteredVehicles = vehicles.filter(v => {
+      if (filterMake.value && v.make !== filterMake.value) return false;
+      if (filterBody.value && v.body_type !== filterBody.value) return false;
+      if (filterFuel.value && v.fuel_type !== filterFuel.value) return false;
+      if (filterTransmission.value && v.transmission !== filterTransmission.value) return false;
+
+      if (filterYearFrom.value && v.year < parseInt(filterYearFrom.value)) return false;
+      if (filterYearTo.value && v.year > parseInt(filterYearTo.value)) return false;
+
+      if (filterMileage.value && v.mileage_km > parseInt(filterMileage.value)) return false;
+
+      return true;
+    });
+
+    applySorting();
+    renderVehicles();
+  }
+
+  function applySorting() {
+    const sortValue = sortSelect.value;
+
+    if (sortValue === "price_asc") {
+      filteredVehicles.sort((a, b) => a.price_low_usd - b.price_low_usd);
+    } else if (sortValue === "price_desc") {
+      filteredVehicles.sort((a, b) => b.price_high_usd - a.price_high_usd);
+    } else if (sortValue === "year_desc") {
+      filteredVehicles.sort((a, b) => b.year - a.year);
+    } else if (sortValue === "mileage_asc") {
+      filteredVehicles.sort((a, b) => a.mileage_km - b.mileage_km);
+    }
+  }
+
+  filterMake.addEventListener("change", applyFilters);
+  filterBody.addEventListener("change", applyFilters);
+  filterFuel.addEventListener("change", applyFilters);
+  filterTransmission.addEventListener("change", applyFilters);
+  filterYearFrom.addEventListener("change", applyFilters);
+  filterYearTo.addEventListener("change", applyFilters);
+  filterMileage.addEventListener("input", applyFilters);
+  sortSelect.addEventListener("change", applyFilters);
+
+  resetFiltersBtn.addEventListener("click", () => {
+    filterMake.value = "";
+    filterBody.value = "";
+    filterFuel.value = "";
+    filterTransmission.value = "";
+    filterYearFrom.value = "";
+    filterYearTo.value = "";
+    filterMileage.value = "";
+    sortSelect.value = "";
+
+    filteredVehicles = vehicles;
+    renderVehicles();
+  });
+});
 // Catalog Filter Manager
 class CatalogManager {
   constructor() {
