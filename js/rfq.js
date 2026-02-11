@@ -1,90 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Request a Quote</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
+// rfq.js
+// 前提：rfq.html のフォーム構造に合わせている
+// ・Reference ID は使用しない
+// ・model / year をメッセージに含める
 
-<body>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('#rfq-form');
+  if (!form) return;
 
-<header class="site-header">
-  <nav class="navbar">
-    <div class="container">
-      <a href="index.html" class="logo">Gloria Trading</a>
-      <ul class="navbar-menu">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="catalog.html">Reference Vehicles</a></li>
-      </ul>
-    </div>
-  </nav>
-</header>
+  // 必要に応じて実際の番号 / メールアドレスに置き換え
+  const WHATSAPP_NUMBER = 'YOUR_WHATSAPP_NUMBER_WITH_COUNTRY_CODE'; // 例: '233XXXXXXXXX'
+  const EMAIL_TO = 'info@example.com';
 
-<section class="page-header">
-  <div class="container">
-    <h1>Request a Quote</h1>
-    <p>Please fill out the form below. We will contact you shortly.</p>
-  </div>
-</section>
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-<section>
-  <div class="container">
+    const name = getValue('#name');
+    const email = getValue('#email');
+    const whatsapp = getValue('#whatsapp');
+    const make = getValue('#make');
+    const model = getValue('#model');
+    const year = getValue('#year');
+    const message = getValue('#message');
 
-    <form id="rfq-form">
+    const subject = buildEmailSubject(make, model, year);
+    const body = buildCommonBody({
+      name,
+      email,
+      whatsapp,
+      make,
+      model,
+      year,
+      message,
+    });
 
-      <!-- Vehicle Reference (auto-filled) -->
-      <fieldset>
-        <legend>Vehicle Information</legend>
+    // メール（mailto）
+    const mailtoUrl = `mailto:${encodeURIComponent(EMAIL_TO)}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
 
-        <div class="form-group">
-          <label for="vehicle-ref">Reference ID</label>
-          <input type="text" id="vehicle-ref" name="vehicle_ref" readonly>
-          <small>This is automatically filled based on the vehicle you selected.</small>
-        </div>
+    // WhatsApp メッセージ
+    const waText = buildWhatsAppText({
+      name,
+      email,
+      whatsapp,
+      make,
+      model,
+      year,
+      message,
+    });
+    const waUrl = `https://wa.me/${encodeURIComponent(WHATSAPP_NUMBER)}?text=${encodeURIComponent(
+      waText
+    )}`;
 
-        <!-- hidden field for backend -->
-        <input type="hidden" id="vehicle-ref-hidden" name="vehicle_ref_hidden">
-      </fieldset>
+    // ユーザー環境に合わせて、どちらを優先するかは運用で決める
+    // ここでは新しいタブで WhatsApp、その後 mailto をトリガー
+    window.open(waUrl, '_blank');
+    window.location.href = mailtoUrl;
+  });
 
-      <!-- Contact Info -->
-      <fieldset>
-        <legend>Your Information</legend>
+  function getValue(selector) {
+    const el = document.querySelector(selector);
+    return el ? el.value.trim() : '';
+  }
 
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" name="name" required>
-        </div>
+  function buildEmailSubject(make, model, year) {
+    const parts = [];
+    if (make) parts.push(make);
+    if (model) parts.push(model);
+    if (year) parts.push(year);
+    if (parts.length === 0) return 'RFQ from Website';
+    return `RFQ: ${parts.join(' ')}`;
+  }
 
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" required>
-        </div>
+  function buildCommonBody({ name, email, whatsapp, make, model, year, message }) {
+    return [
+      `Name: ${name || '-'}`,
+      `Email: ${email || '-'}`,
+      `WhatsApp: ${whatsapp || '-'}`,
+      '',
+      `Make: ${make || '-'}`,
+      `Model: ${model || '-'}`,
+      `Year: ${year || '-'}`,
+      '',
+      'Message / Requirements:',
+      message || '-',
+    ].join('\n');
+  }
 
-        <div class="form-group">
-          <label for="phone">Phone / WhatsApp</label>
-          <input type="tel" id="phone" name="phone">
-        </div>
-      </fieldset>
+  function buildWhatsAppText({ name, email, whatsapp, make, model, year, message }) {
+    return [
+      'RFQ from Website',
+      '',
+      `Name: ${name || '-'}`,
+      `Email: ${email || '-'}`,
+      `WhatsApp: ${whatsapp || '-'}`,
+      '',
+      `Make: ${make || '-'}`,
+      `Model: ${model || '-'}`,
+      `Year: ${year || '-'}`,
+      '',
+      'Message / Requirements:',
+      message || '-',
+    ].join('\n');
+  }
+});
 
-      <!-- Message -->
-      <fieldset>
-        <legend>Message</legend>
-
-        <div class="form-group">
-          <label for="message">Your Request</label>
-          <textarea id="message" name="message" rows="5"></textarea>
-        </div>
-      </fieldset>
-
-      <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
-
-    </form>
-
-  </div>
-</section>
-
-<script src="js/rfq.js"></script>
-
-</body>
-</html>
