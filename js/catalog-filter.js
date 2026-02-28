@@ -1,100 +1,198 @@
-// catalog-filter.js
-// 前提：各車両カードに data-make / data-model 属性が付与されていること
-// 例：<article class="vehicle-card" data-make="Toyota" data-model="Corolla">...</article>
+document.addEventListener("DOMContentLoaded", () => {
+  const vehicleGrid = document.getElementById("vehicle-grid");
+  const resultsCount = document.getElementById("results-count");
 
-document.addEventListener('DOMContentLoaded', () => {
-  const makeSelect = document.querySelector('#make-filter');
-  const modelSelect = document.querySelector('#model-filter');
+  const filterMake = document.getElementById("filter-make");
+  const filterModel = document.getElementById("filter-model"); // ← 追加
+  const filterBody = document.getElementById("filter-body");
+  const filterFuel = document.getElementById("filter-fuel");
+  const filterTransmission = document.getElementById("filter-transmission");
+  const filterYearFrom = document.getElementById("filter-year-from");
+  const filterYearTo = document.getElementById("filter-year-to");
+  const filterMileage = document.getElementById("filter-mileage");
+  const sortSelect = document.getElementById("sort-select");
+  const resetFiltersBtn = document.getElementById("reset-filters");
 
-  if (!makeSelect || !modelSelect) return;
+  let vehicles = [];
+  let filteredVehicles = [];
+  let makeModelMap = {}; // ← Make → Model 対応表
 
-  let makeModelMap = {};
+  fetch("data/vehicles.json")
+    .then(response => response.json())
+    .then(data => {
+      vehicles = data.vehicles;
+      filteredVehicles = vehicles;
 
-  // vehicles.json から Make → Model の対応表を作成
-  fetch('./vehicles.json')
-    .then((res) => res.json())
-    .then((vehicles) => {
-      makeModelMap = buildMakeModelMap(vehicles);
-      // 初期状態では Model セレクトは「All Models」のみ
-      resetModelOptions();
-      // すでに Make が選択されている場合は候補を生成
-      if (makeSelect.value) {
-        populateModelOptions(makeSelect.value);
-      }
-      // 初回フィルタ実行
-      filterVehicles();
-    })
-    .catch((err) => {
-      console.error('Failed to load vehicles.json:', err);
+      buildMakeModelMap(); // ← 追加
+      populateModelOptions(""); // 初期状態は All Models
+
+      renderVehicles();
     });
 
-  function buildMakeModelMap(vehicles) {
-    const map = {};
-    vehicles.forEach((v) => {
-      const make = (v.make || '').trim();
-      const model = (v.model || '').trim();
+  // -----------------------------
+  // Make → Model 対応表を作成
+  // -----------------------------
+  function buildMakeModelMap() {
+    makeModelMap = {};
+
+    vehicles.forEach(v => {
+      const make = v.make?.trim();
+      const model = v.model?.trim();
       if (!make || !model) return;
-      if (!map[make]) map[make] = new Set();
-      map[make].add(model);
-    });
-    return map;
-  }
 
-  function resetModelOptions() {
-    modelSelect.innerHTML = '';
-    const allOpt = document.createElement('option');
-    allOpt.value = '';
-    allOpt.textContent = 'All Models';
-    modelSelect.appendChild(allOpt);
-  }
-
-  function populateModelOptions(selectedMake) {
-    resetModelOptions();
-    const modelsSet = makeModelMap[selectedMake];
-    if (!modelsSet) return;
-    const models = Array.from(modelsSet).sort((a, b) => a.localeCompare(b));
-    models.forEach((model) => {
-      const opt = document.createElement('option');
-      opt.value = model;
-      opt.textContent = model;
-      modelSelect.appendChild(opt);
+      if (!makeModelMap[make]) makeModelMap[make] = new Set();
+      makeModelMap[make].add(model);
     });
   }
 
-  function filterVehicles() {
-    const selectedMake = makeSelect.value.trim();
-    const selectedModel = modelSelect.value.trim();
-    const cards = document.querySelectorAll('.vehicle-card');
+  // -----------------------------
+  // Model セレクトを更新
+  // -----------------------------
+  function populateModelOptions(make) {
+    filterModel.innerHTML = "";
 
-    cards.forEach((card) => {
-      const cardMake = (card.dataset.make || '').trim();
-      const cardModel = (card.dataset.model || '').trim();
+    const optAll = document.createElement("option");
+    optAll.value = "";
+    optAll.textContent = "All Models";
+    filterModel.appendChild(optAll);
 
-      const matchMake = !selectedMake || cardMake === selectedMake;
-      const matchModel = !selectedModel || cardModel === selectedModel;
+    if (!make || !makeModelMap[make]) return;
 
-      if (matchMake && matchModel) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
+    const models = Array.from(makeModelMap[make]).sort();
+    models.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      filterModel.appendChild(opt);
     });
   }
 
-  // Make 選択時：Model 候補を更新 + フィルタ
-  makeSelect.addEventListener('change', () => {
-    const selectedMake = makeSelect.value.trim();
-    if (selectedMake) {
-      populateModelOptions(selectedMake);
-    } else {
-      resetModelOptions();
+  // -----------------------------
+  // 車両カード描画（あなたのコードそのまま）
+  // -----------------------------
+  function renderVehicles() {
+    vehicleGrid.innerHTML = "";
+
+    filteredVehicles.forEach(v => {
+      const hasImage = v.gallery && v.gallery.length > 0;
+      const imageSrc = hasImage ? v.gallery[0] : "";
+
+      const card = document.createElement("div");
+      card.className = "vehicle-card";
+
+      card.innerHTML = `       
+        <div class="vehicle-image ${hasImage ? "" : "no-image"}">
+    ${ hasImage ? `<img src="${imageSrc}" alt="${v.display_name_en}">` : `<span>No Image</span>` }
+  </div>
+
+  <div class="vehicle-card-inner">
+
+    <h3 class="vehicle-title">${v.display_name_en}</h3>
+
+    <p class="ref-id">Ref ID: ${v.ref_id}</p>
+
+    <p class="vehicle-meta">
+      Year: ${v.year} | Mileage: ${v.mileage_km.toLocaleString()} km
+    </p>
+
+    <p class="vehicle-drive">Right-Hand Drive (RHD) Only</p>
+
+    <div class="vehicle-price-block">
+      <p class="price-label">Est. Price Range (USD)</p>
+      <p class="price-range">$${v.price_low_usd.toLocaleString()} – $${v.price_high_usd.toLocaleString()}</p>
+      <p class="price-basis">Basis: ${v.basis_from} – ${v.basis_to}</p>
+    </div>
+
+    <p class="vehicle-note">Not in stock. Past transaction example.</p>
+
+    <a href="vehicle-detail.html?ref=${v.ref_id}" class="btn btn-primary btn-block">
+      Request Quote for Similar
+    </a>
+
+  </div>
+   `;
+
+
+      vehicleGrid.appendChild(card);
+    });
+
+    resultsCount.textContent = `${filteredVehicles.length} vehicles found`;
+  }
+
+  // -----------------------------
+  // フィルタ適用（Model 条件を追加）
+  // -----------------------------
+  function applyFilters() {
+    filteredVehicles = vehicles.filter(v => {
+      if (filterMake.value && v.make !== filterMake.value) return false;
+      if (filterModel.value && v.model !== filterModel.value) return false; // ← 追加
+      if (filterBody.value && v.body_type !== filterBody.value) return false;
+      if (filterFuel.value && v.fuel_type !== filterFuel.value) return false;
+      if (filterTransmission.value && v.transmission !== filterTransmission.value) return false;
+
+      if (filterYearFrom.value && Number(v.year) < Number(filterYearFrom.value)) return false;
+      if (filterYearTo.value && Number(v.year) > Number(filterYearTo.value)) return false;
+
+      if (filterMileage.value && v.mileage_km > Number(filterMileage.value)) return false;
+
+      return true;
+    });
+
+    applySorting();
+    renderVehicles();
+  }
+
+  // -----------------------------
+  // ソート（あなたのコードそのまま）
+  // -----------------------------
+  function applySorting() {
+    const sortValue = sortSelect.value;
+
+    if (sortValue === "price_asc") {
+      filteredVehicles.sort((a, b) => a.price_low_usd - b.price_low_usd);
+    } else if (sortValue === "price_desc") {
+      filteredVehicles.sort((a, b) => b.price_high_usd - a.price_high_usd);
+    } else if (sortValue === "year_desc") {
+      filteredVehicles.sort((a, b) => Number(b.year) - Number(a.year));
+    } else if (sortValue === "mileage_asc") {
+      filteredVehicles.sort((a, b) => a.mileage_km - b.mileage_km);
     }
-    filterVehicles();
+  }
+
+  // -----------------------------
+  // イベント
+  // -----------------------------
+  filterMake.addEventListener("change", () => {
+    populateModelOptions(filterMake.value); // ← Make 変更時に Model 更新
+    applyFilters();
   });
 
-  // Model 選択時：フィルタのみ
-  modelSelect.addEventListener('change', () => {
-    filterVehicles();
+  filterModel.addEventListener("change", applyFilters); // ← 追加
+
+  filterBody.addEventListener("change", applyFilters);
+  filterFuel.addEventListener("change", applyFilters);
+  filterTransmission.addEventListener("change", applyFilters);
+  filterYearFrom.addEventListener("change", applyFilters);
+  filterYearTo.addEventListener("change", applyFilters);
+  filterMileage.addEventListener("input", applyFilters);
+  sortSelect.addEventListener("change", applyFilters);
+
+  resetFiltersBtn.addEventListener("click", () => {
+    filterMake.value = "";
+    filterModel.value = ""; // ← 追加
+    filterBody.value = "";
+    filterFuel.value = "";
+    filterTransmission.value = "";
+    filterYearFrom.value = "";
+    filterYearTo.value = "";
+    filterMileage.value = "";
+    sortSelect.value = "";
+
+    populateModelOptions(""); // Model をリセット
+
+    filteredVehicles = vehicles;
+    renderVehicles();
   });
 });
+
 
