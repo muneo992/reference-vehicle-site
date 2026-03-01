@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // vehicles.json is { "vehicles": [...] }
       const vehicles = data.vehicles || data;
       const vehicle = vehicles.find(v => (v.ref_id || v.ref) === ref);
+
+      // --- BUG FIX: 欠落していた if (!vehicle) { を追加 ---
+      if (!vehicle) {
         const titleEl = document.getElementById("vehicle-title");
         if (titleEl) titleEl.textContent = "Vehicle not found";
         return;
@@ -61,14 +64,27 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      const rfqLink = document.getElementById("rfq-link");
+      // rfq-link と formal-rfq-link の両方に対応
+      const rfqLink = document.getElementById("rfq-link") || document.getElementById("formal-rfq-link");
       if (rfqLink) rfqLink.href = "rfq.html?ref=" + (vehicle.ref_id || vehicle.ref);
 
+      // wa-button と whatsapp-link の両方に対応
+      const waText = encodeURIComponent("Hello, I am interested in: " + vehicle.display_name_en + " (Ref: " + (vehicle.ref_id || vehicle.ref) + ")");
+      const waUrl = "https://wa.me/819076671825?text=" + waText;
+
       const waLink = document.getElementById("whatsapp-link");
-      if (waLink) {
-        const waText = encodeURIComponent("Hello, I am interested in: " + vehicle.display_name_en + " (Ref: " + (vehicle.ref_id || vehicle.ref) + ")");
-        waLink.href = "https://wa.me/819076671825?text=" + waText;
+      if (waLink) waLink.href = waUrl;
+
+      const waButton = document.getElementById("wa-button");
+      if (waButton) {
+        waButton.addEventListener("click", () => {
+          window.open(waUrl, "_blank");
+        });
       }
     })
-    .catch(err => console.error("Failed to load vehicle data:", err));
+    .catch(err => {
+      console.error("Failed to load vehicle data:", err);
+      const titleEl = document.getElementById("vehicle-title");
+      if (titleEl) titleEl.textContent = "Error loading vehicle data";
+    });
 });
