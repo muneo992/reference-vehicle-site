@@ -5,11 +5,11 @@
 
 /* ── CSS Variables ── */
 :root {
-  --green-dark:   #1a4731;
-  --green-mid:    #2d6a4f;
-  --green-light:  #52b788;
-  --green-pale:   #d8f3dc;
-  --green-accent: #40916c;
+  --green-dark:   #005a2b;
+  --green-mid:    #009042;
+  --green-light:  #00b050;
+  --green-pale:   #d6f0e0;
+  --green-accent: #007a38;
   --white:        #ffffff;
   --gray-100:     #f8f9fa;
   --gray-200:     #e9ecef;
