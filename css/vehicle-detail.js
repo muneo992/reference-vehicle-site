@@ -44,51 +44,12 @@ document.addEventListener("DOMContentLoaded", () => {
       set("basis-from", vehicle.basis_from || "N/A");
       set("basis-to",   vehicle.basis_to   || "N/A");
 
-      // --- SEO: alt テキストを生成 ---
-      // 例: "2014 Toyota Camry Hybrid Sedan - Japanese Used Car Export RHD"
-      const seoAlt = [
-        vehicle.year,
-        vehicle.make,
-        vehicle.model,
-        vehicle.fuel_type,
-        vehicle.body_type,
-        "- Japanese Used Car Export RHD"
-      ].filter(Boolean).join(" ");
-
-      // --- SEO: ページタイトルを動的に更新 ---
-      document.title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ")
-        + " - Gloria Trading | Japanese Used Car Export";
-
-      // --- SEO: meta description を動的に更新 ---
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute("content",
-          [vehicle.year, vehicle.make, vehicle.model, vehicle.fuel_type].filter(Boolean).join(" ")
-          + (vehicle.mileage_km != null ? ", " + vehicle.mileage_km.toLocaleString() + "km" : "")
-          + ", right-hand drive. Reference vehicle from Gloria Trading,"
-          + " Japanese used car exporter. FOB Japan price available."
-        );
-      }
-
-      // --- SEO: 画像ファイル名をハイフン区切り小文字スラグに変換するヘルパー ---
-      // 例: "Toyota Camry 2014" → "toyota-camry-2014"
-      const toSlug = str => String(str)
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "")
-        .trim()
-        .replace(/[\s_]+/g, "-");
-
-      const vehicleSlug = toSlug(
-        [vehicle.make, vehicle.model, vehicle.year, vehicle.fuel_type].filter(Boolean).join("-")
-      );
-
       // --- メイン画像 ---
       const mainImage = document.getElementById("main-image");
       if (mainImage) {
         if (vehicle.gallery && vehicle.gallery.length > 0) {
           mainImage.src = vehicle.gallery[0];
-          // SEO: 車名・年式・RHDを含む具体的なalt属性を設定
-          mainImage.alt = seoAlt;
+          mainImage.alt = vehicle.display_name_en;
         } else {
           mainImage.style.display = "none";
         }
@@ -100,8 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         vehicle.gallery.forEach((src, i) => {
           const img = document.createElement("img");
           img.src = src;
-          // SEO: サムネイルにも具体的なalt属性を設定（写真番号付き）
-          img.alt = seoAlt + " - Photo " + (i + 1);
+          img.alt = vehicle.display_name_en + " photo " + (i + 1);
           img.style.cssText = "width:80px;height:60px;object-fit:cover;cursor:pointer;border:2px solid transparent;border-radius:4px;";
           img.addEventListener("click", () => { if (mainImage) mainImage.src = src; });
           thumbContainer.appendChild(img);
